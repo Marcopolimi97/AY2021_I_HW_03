@@ -1,7 +1,12 @@
 /*
 * MARCO MAESTRONI
 *
-* MAIN: gestione macchina a stati
+* MAIN: 
+* Gestione macchina a stati.
+* Implemento il codice impostando la ricezione di un byte alla volta.
+*
+* Ho messo come commenti i vari 'UART_PutString' poichè mi ostacolavano
+* l'invio dei byte da CoolTerm
 *
 */
 #include "project.h"
@@ -26,10 +31,10 @@ int main(void)
     
     // Start UART component
     UART_Start();
+    
     // Enable the isr and timer
     isr_UART_StartEx(Custom_UART_RX_ISR);
-    //isr_Timer_StartEx(ISR_TIMER);
-    
+    isr_Timer_StartEx(ISR_TIMER);
     
     // Start PWM Components
     PWM_RG_Start(); // Start PWM connected to red and green channels
@@ -40,7 +45,7 @@ int main(void)
     PWM_RG_WriteCompare2(255);
     PWM_B_WriteCompare(255);
     
-    UART_PutString("Inserisci HEADER:\r\n");
+    //UART_PutString("Inserisci HEADER:\r\n");
     
 
     for(;;)
@@ -53,37 +58,32 @@ int main(void)
                 rec=0;
                 //leggo il messaggio
                 received=UART_ReadRxData();
+                //se il byte letto coincide con l'HEADER_BYTE
                 if(received==160)
                 {
                     // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
-                    //Timer_Start();
+                    Timer_Start();
                     state=HEADER_BYTE_RECEIVED;
-                    UART_PutString("Inserisci RED:\r\n");
-
+                    //UART_PutString("Inserisci RED:\r\n");
                 }
             }        
         }
         
         if(state==HEADER_BYTE_RECEIVED)
         {
-            //"BLACK_COLOR" settato all'avvio
-    PWM_RG_WriteCompare1(0);
-    PWM_RG_WriteCompare2(0);
-    PWM_B_WriteCompare(0);
-            
             // se ho ricevuto un messaggio la flag rec è stata messa a 1
             if (rec == 1)
             {
                 rec=0;
                 //leggo il messaggio
                 received = UART_ReadRxData();
+                //controllo sul valore letto
                 if(received>=0 && received<=255)
                 {
                     // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
-                    //Timer_Start();
+                    Timer_Start();
                     state=RED_BYTE_RECEIVED;
-                    UART_PutString("Inserisci GREEN:\r\n");
-
+                    //UART_PutString("Inserisci GREEN:\r\n");
                 }
             }        
         }
@@ -98,13 +98,13 @@ int main(void)
                 rec=0;
                 //leggo il messaggio
                 received = UART_ReadRxData();
+                 //controllo sul valore letto
                 if(received>=0 && received<=255)
                 {
                     // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
-                    //Timer_Start();
+                    Timer_Start();
                     state=GREEN_BYTE_RECEIVED;
-                    UART_PutString("Inserisci BLUE:\r\n");
-
+                    //UART_PutString("Inserisci BLUE:\r\n");
                 }
             }        
         }
@@ -119,13 +119,13 @@ int main(void)
                 rec=0;
                 //leggo il messaggio
                 received = UART_ReadRxData();
+                //controllo sul valore letto
                 if(received>=0 && received<=255)
                 {
                     // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
-                    //Timer_Start();
+                    Timer_Start();
                     state=BLUE_BYTE_RECEIVED;
-                    UART_PutString("Inserisci TAIL:\r\n");
-
+                    //UART_PutString("Inserisci TAIL:\r\n");
                 }
             }        
         }
@@ -140,10 +140,9 @@ int main(void)
                 rec=0;
                 //leggo il messaggio
                 received = UART_ReadRxData();
+                //se il byte letto coincide con il TAIL_BYTE
                 if(received==192)
                 {
-                    // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
-                    //Timer_Start();
                     state=TAIL_BYTE_RECEIVED;
                 }
             }        
@@ -152,7 +151,7 @@ int main(void)
         if(state==TAIL_BYTE_RECEIVED)
         {
             state=IDLE_STATE;
-            UART_PutString("Inserisci HEADER:\r\n");
+            //UART_PutString("Inserisci HEADER:\r\n");
         }    
     }
 }

@@ -5,9 +5,7 @@
 *
 */
 
-//#include "project.h"
 #include "UART_InterruptRoutine.h"
-//#include "Timer_InterruptRoutine.h"
 
 #include "UART.h"
 #include "stdio.h" // --> sprintf function
@@ -16,7 +14,6 @@ extern uint8_t rec;
 extern int state;
 
 char test_variable;
-char string[]={'\0'};
 
 CY_ISR(Custom_UART_RX_ISR)
 {
@@ -27,10 +24,10 @@ CY_ISR(Custom_UART_RX_ISR)
         
         test_variable = UART_ReadRxData();
         
+        //se leggo il carattere v, mando la stringa seguente per attivare la GUI
         if(test_variable=='v')
         {
-            char string[]={"RGB LED Program $$$"};
-            UART_PutString(string);
+            UART_PutString("RGB LED Program $$$");
         } 
     }
 }
