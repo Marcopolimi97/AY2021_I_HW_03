@@ -27,10 +27,9 @@ int main(void)
     // Start UART component
     UART_Start();
     // Enable the isr and timer
-    //isr_UART_StartEx(Custom_UART_RX_ISR);
+    isr_UART_StartEx(Custom_UART_RX_ISR);
     //isr_Timer_StartEx(ISR_TIMER);
     
-    //Timer_Enable();
     
     // Start PWM Components
     PWM_RG_Start(); // Start PWM connected to red and green channels
@@ -41,18 +40,13 @@ int main(void)
     PWM_RG_WriteCompare2(255);
     PWM_B_WriteCompare(255);
     
-    //UART_PutString("Inserisci HEADER_BYTE:\r\n");
+    UART_PutString("Inserisci HEADER:\r\n");
     
 
     for(;;)
     {   
         if(state==IDLE_STATE)
         {
-            //"BLACK_COLOR" settato all'avvio
-            PWM_RG_WriteCompare1(255);
-            PWM_RG_WriteCompare2(255);
-            PWM_B_WriteCompare(255);
-            
             // se ho ricevuto un messaggio la flag rec è stata messa a 1
             if (rec == 1)
             {
@@ -61,15 +55,22 @@ int main(void)
                 received=UART_ReadRxData();
                 if(received==160)
                 {
+                    // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
+                    //Timer_Start();
                     state=HEADER_BYTE_RECEIVED;
+                    UART_PutString("Inserisci RED:\r\n");
+
                 }
             }        
         }
         
         if(state==HEADER_BYTE_RECEIVED)
         {
-            // faccio partire il TIMER.
-            //isr_Timer_Start();
+            //"BLACK_COLOR" settato all'avvio
+    PWM_RG_WriteCompare1(0);
+    PWM_RG_WriteCompare2(0);
+    PWM_B_WriteCompare(0);
+            
             // se ho ricevuto un messaggio la flag rec è stata messa a 1
             if (rec == 1)
             {
@@ -78,7 +79,11 @@ int main(void)
                 received = UART_ReadRxData();
                 if(received>=0 && received<=255)
                 {
+                    // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
+                    //Timer_Start();
                     state=RED_BYTE_RECEIVED;
+                    UART_PutString("Inserisci GREEN:\r\n");
+
                 }
             }        
         }
@@ -87,8 +92,6 @@ int main(void)
         {
             //imposto il colore rosso
             PWM_RG_WriteCompare1(255-received);
-            // faccio partire il TIMER.
-            //isr_Timer_Start();
             // se ho ricevuto un messaggio la flag rec è stata messa a 1
             if (rec == 1)
             {
@@ -97,7 +100,11 @@ int main(void)
                 received = UART_ReadRxData();
                 if(received>=0 && received<=255)
                 {
+                    // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
+                    //Timer_Start();
                     state=GREEN_BYTE_RECEIVED;
+                    UART_PutString("Inserisci BLUE:\r\n");
+
                 }
             }        
         }
@@ -106,8 +113,6 @@ int main(void)
         {
             //imposto il colore verde
             PWM_RG_WriteCompare2(255-received);
-            // faccio partire il TIMER.
-            //isr_Timer_Start();
             // se ho ricevuto un messaggio la flag rec è stata messa a 1
             if (rec == 1)
             {
@@ -116,7 +121,11 @@ int main(void)
                 received = UART_ReadRxData();
                 if(received>=0 && received<=255)
                 {
+                    // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
+                    //Timer_Start();
                     state=BLUE_BYTE_RECEIVED;
+                    UART_PutString("Inserisci TAIL:\r\n");
+
                 }
             }        
         }
@@ -125,8 +134,6 @@ int main(void)
         {
             //imposto il colore blu
             PWM_B_WriteCompare(255-received);
-            // faccio partire il TIMER.
-            //isr_Timer_Start();
             // se ho ricevuto un messaggio la flag rec è stata messa a 1
             if (rec == 1)
             {
@@ -135,6 +142,8 @@ int main(void)
                 received = UART_ReadRxData();
                 if(received==192)
                 {
+                    // faccio partire il TIMER, che parte inizializzato e attiva Timer_Enable () [vedi dichiarazione funzione]
+                    //Timer_Start();
                     state=TAIL_BYTE_RECEIVED;
                 }
             }        
@@ -142,14 +151,8 @@ int main(void)
         
         if(state==TAIL_BYTE_RECEIVED)
         {
-            // faccio partire il TIMER.
-            //isr_Timer_Stop();
-            //imposto "BLACK_COLOR" e torno allo stato iniziale
-            PWM_RG_WriteCompare1(255);
-            PWM_RG_WriteCompare2(255);
-            PWM_B_WriteCompare(255);
-            
             state=IDLE_STATE;
+            UART_PutString("Inserisci HEADER:\r\n");
         }    
     }
 }
